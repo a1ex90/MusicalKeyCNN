@@ -42,7 +42,7 @@ Install the required packages:
 
 **Important**
 
-For PyTorch and torchaudio, follow the instructions at [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
+For PyTorch and torchaudio, follow the instructions at [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/).
 Choose the correct command for your CUDA/cuDNN or CPU environment.
 
 ## Key Prediction for Your Own Songs
@@ -57,7 +57,7 @@ python predict_keys.py -f path/to/your/music_folder/
 The script prints a summary table with:
 - Filename
 - Classification index (0-23)
-- Index according to the Camelot Wheel (e.g. "8A" or "3B")
+- Index according to the Camelot Wheel (e.g., "8A" or "3B")
 - The corresponding key
 
 You can set the model checkpoint path with `-m path/to/your_model.pt` and the computation device with `--device cuda` or `--device cpu`.
@@ -96,7 +96,7 @@ You can modify hyperparameters or training parameters by editing `train.py`.
 
 ## Evaluation
 
-To evaluate a trained model (e.g. calculate MIREX scores on GiantSteps):
+To evaluate a trained model (e.g., calculate MIREX scores on GiantSteps):
 
 `python eval.py`
 
@@ -107,6 +107,8 @@ The following table contains the percentage ratios and the weighted Mirex scores
 | Method | Weighted | Correct | Fifth | Relative | Parallel | Other |
 | ------ | -------- | ------- | ----- |--------- | -------- | ----- |
 | `keynet.pt`| 73.51 | 66.72 | 8.11 | 6.79 | 3.48 | 14.90 |
+| Mixed In Key 8.3 | 75.70 | 69.37 | 8.11 | 5.13 | 3.64 | 13.74 |
+| RekordBox 7.12 | 65.53 | 56.79 | 11.92 | 5.96 | 4.97 | 20.36 |
 
 ## Literature
 
