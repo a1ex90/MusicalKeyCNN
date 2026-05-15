@@ -118,3 +118,9 @@ Please cite and refer to the original publication for scientific use and further
 In: *Proceedings of the 19th International Society for Music Information Retrieval Conference (ISMIR)* (2018) [arXiv](https://arxiv.org/abs/1808.05340)
 
 - \[2\] F. Korzeniowski and G. Widmer. "End-to-End Musical Key Estimation Using a Convolutional Neural Network". In: *Proceedings of the 25th European Signal Processing Conference* (2017) [arXiv](https://arxiv.org/abs/1706.02921)
+
+## Android App
+
+I've released an Android app using this method for live key estimation. Everything works offline, solely on the device.
+
+[Get it in the Play Store](https://play.google.com/store/apps/details?id=com.zomsoft.bkm)
