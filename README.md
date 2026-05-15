@@ -14,6 +14,7 @@ This repository provides a full pipeline for musical key classification based on
 - [Training](#training)
 - [Evaluation](#evaluation)
 - [Literature](#literature)
+- [Android App](#android-app)
 
 ---
 
