@@ -15,18 +15,18 @@ def parse_args():
         args: Parsed arguments.
     """
     default_model_path = Path('checkpoints') / 'keynet.pt'
-    parser = argparse.ArgumentParser(description="Predict Camelot key for single or multiple mp3 files.")
+    parser = argparse.ArgumentParser(description="Predict Camelot key for single or multiple audio files.")
     parser.add_argument('-f', '--path', type=str, required=True,
-                        help="Path to an .mp3 file or folder containing .mp3 files.")
+                        help="Path to an audio file (.mp3, .flac) or folder containing them.")
     parser.add_argument('-m', '--model_path', type=str, default=str(default_model_path),
                         help="Path to the trained model checkpoint (.pt).")
     parser.add_argument('--device', type=str, default=None,
                         help="Device to use: 'cpu' or 'cuda'. If not given, uses CUDA if available.")
     return parser.parse_args()
 
-def get_mp3_list(path):
+def get_audio_list(path):
     """
-    Returns a list of mp3 files from a folder or a single file.
+    Returns a list of audio files from a folder or a single file.
     Args:
         path (str or Path): Path to .mp3 file or directory.
 
@@ -34,28 +34,29 @@ def get_mp3_list(path):
         List[Path]: List of mp3 file Paths.
 
     Raises:
-        ValueError: If file is not .mp3 or folder contains none.
+        ValueError: If file is not supported or folder contains none.
     """
     path = Path(path)
+    supported_exts = {'.mp3', '.flac'}
     if path.is_file():
-        if path.suffix.lower() != ".mp3":
-            raise ValueError(f"File {path} is not a .mp3 file.")
+        if path.suffix.lower() not in supported_exts:
+            raise ValueError(f"File {path} is not a supported audio file.")
         return [path]
     elif path.is_dir():
-        files = list(path.glob("*.mp3"))
+        files = [f for f in path.iterdir() if f.suffix.lower() in supported_exts]
         if not files:
-            raise ValueError(f"No .mp3 files found in {path}")
+            raise ValueError(f"No supported audio files found in {path}")
         return files
     else:
         raise FileNotFoundError(f"{path} is not a valid file or folder.")
 
-def preprocess_mp3(mp3_path, sample_rate=44100, n_bins=105, hop_length=8820):
+def preprocess_audio(audio_path, sample_rate=44100, n_bins=105, hop_length=8820):
     """
-    Loads an mp3, converts to mono, resamples, and extracts a log-magnitude CQT spectrogram.
+    Loads audio, converts to mono, resamples, and extracts a log-magnitude CQT spectrogram.
     Then slices result as in MTG preprocessed dataset (removes last frequency bin and converts to torch tensor).
 
     Args:
-        mp3_path (Path): Path to .mp3 file.
+        audio_path (Path): Path to audio file.
         sample_rate (int): Target sampling rate for audio.
         n_bins (int): Number of CQT bins.
         hop_length (int): Hop length for CQT.
@@ -63,7 +64,7 @@ def preprocess_mp3(mp3_path, sample_rate=44100, n_bins=105, hop_length=8820):
     Returns:
         torch.Tensor: Shape (1, freq_bins, time_frames), ready for model input.
     """
-    waveform, sr = torchaudio.load(mp3_path)
+    waveform, sr = torchaudio.load(audio_path)
     if waveform.shape[0] > 1:
         waveform = waveform.mean(dim=0, keepdim=True)
     if sr != sample_rate:
@@ -110,7 +111,7 @@ def main():
     device = torch.device(args.device) if args.device else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = load_model(args.model_path, device)
 
-    mp3_files = get_mp3_list(args.path)
+    audio_files = get_audio_list(args.path)
 
     print("="*70)
     print("{:^70}".format("Key Prediction Results"))
@@ -118,9 +119,9 @@ def main():
     print(f"{'File':<28} | {'ID':^5} | {'Camelot':^8} | {'Key':^20}")
     print("-"*70)
 
-    for mp3_path in mp3_files:
+    for audio_path in audio_files:
         try:
-            spec_tensor = preprocess_mp3(mp3_path)
+            spec_tensor = preprocess_audio(audio_path)
             # Torch shape: (1, freq, time); batchify and to device
             spec_tensor = spec_tensor.to(device)
             spec_tensor = spec_tensor.unsqueeze(0) if spec_tensor.ndim == 3 else spec_tensor  # Add batch dimension if needed
@@ -131,12 +132,12 @@ def main():
 
             camelot_str, key_text = camelot_output(pred)
 
-            print(f"{mp3_path.name:<28} | {pred:^5} | {camelot_str:^8} | {key_text:^20}")
+            print(f"{audio_path.name:<28} | {pred:^5} | {camelot_str:^8} | {key_text:^20}")
         except Exception as e:
-            print(f"Error processing {mp3_path.name}: {e}")
+            print(f"Error processing {audio_path.name}: {e}")
     
     print("="*70)
-    print(f"Total files processed: {len(mp3_files)}")
+    print(f"Total files processed: {len(audio_files)}")
     print("="*70)
 
 if __name__ == "__main__":
